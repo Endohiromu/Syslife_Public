@@ -1,3 +1,6 @@
+#SlackのウェブフックURLはGitにあげないこと
+#セキュリティーの関係で自動的に無効化される
+
 import json
 import requests
 import urllib.request, urllib.error
@@ -12,15 +15,20 @@ def lambda_handler(event, context):
     
     scrapFromSlad(titles,links)
     ScrapFromAt(titles,links)
+
     
-    text2post = chooseTopicks(titles,links,5)
+    titles2Append,links2Append = self.ScrapFromNHK()
+    titles += titles2Append
+    links += links2Append
+    
+    text2post = chooseTopicks(titles,links,10)
     print(text2post)
 
-def SendToSlack(text):
-    hookURL = "https://hooks.slack.com/services/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"
-    requests.post(URL, data=json.dumps({
-        "text" :text,
-    }))
+#def SendToSlack(text):
+    #hookURL = ""
+    #requests.post(URL, data=json.dumps({
+    #    "text" :text,
+    #}))
     
 def chooseTopicks(titles,links,nums):
     textResult = ""
@@ -63,4 +71,22 @@ def ScrapFromAt(titleArgs, linkArgs):
     for i,title in enumerate(news):
         titles.append(title.find("a").text)
         links.append(title.find("a").get("href"))
+
+def ScrapFromNHK():
+    URL = "https://www3.nhk.or.jp/news/cat04.html"
     
+    r = urllib.request.urlopen(URL)
+
+    soup = BeautifulSoup(r, "html.parser")
+    topDiv = soup.find("div", class="content--items")
+
+    top = topDiv.find_all("li")
+    
+    titles,links = [],[]
+
+
+    for i,title in enumerate(news):
+        titles.append(title.find("a").text)
+        links.append(title.find("a").get("href"))
+    
+    return titles,links
