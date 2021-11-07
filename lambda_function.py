@@ -8,19 +8,31 @@ from bs4 import BeautifulSoup
 import random
 
 def lambda_handler(event, context):
+    #Slackに送信する文字列
     text2post = ""
     
+    #タイトル、リンクをそれぞれ格納するリスト
     titles = []
     links = []
-    
-    scrapFromSlad(titles,links)
-    ScrapFromAt(titles,links)
 
-    
-    titles2Append,links2Append = self.ScrapFromNHK()
+    #各スクレイピングデータを一時的に保持し、結合時に使用する
+    titles2Append,links2Append = []
+
+    #各サイト
+    #からのスクレイピングおよび結合
+    titles2Append,links2Append = ScrapFromSlad()
+    titles += titles2Append
+    links += links2Append
+
+    titles2Append,links2Append = ScrapFromAt()
+    titles += titles2Append
+    links += links2Append
+
+    titles2Append,links2Append = ScrapFromNHK()
     titles += titles2Append
     links += links2Append
     
+    #全結果の中からランダムに第三引数分の個数抽出する
     text2post = chooseTopicks(titles,links,10)
     print(text2post)
 
@@ -37,7 +49,7 @@ def chooseTopicks(titles,links,nums):
         textResult += titles[ind] + "\n" + links[ind] + "\n"
     return textResult
     
-def scrapFromSlad(titleArgs, linkArgs):
+def ScrapFromSlad():
     URL = "https://srad.jp/"
     r = urllib.request.urlopen(URL)
     
@@ -50,11 +62,12 @@ def scrapFromSlad(titleArgs, linkArgs):
     
     
     for i,title in enumerate(titleDiv):
-        titleArgs.append(title.find("a").text)
-        linkArgs.append(title.find("a").get("href"))
+        titles.append(title.find("a").text)
+        links.append(title.find("a").get("href"))
+
     return
 
-def ScrapFromAt(titleArgs, linkArgs):
+def ScrapFromAt():
     URL = "https://atmarkit.itmedia.co.jp/"
     
     r = urllib.request.urlopen(URL)
@@ -71,6 +84,8 @@ def ScrapFromAt(titleArgs, linkArgs):
     for i,title in enumerate(news):
         titles.append(title.find("a").text)
         links.append(title.find("a").get("href"))
+    
+    return titles, links
 
 def ScrapFromNHK():
     URL = "https://www3.nhk.or.jp/news/cat04.html"
