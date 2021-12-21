@@ -1,6 +1,8 @@
 #SlackのウェブフックURLはGitにあげないこと
 #セキュリティーの関係で自動的に無効化される
 
+#モジュール類はAWSのLayerで管理
+
 import json
 import requests
 import urllib.request, urllib.error
