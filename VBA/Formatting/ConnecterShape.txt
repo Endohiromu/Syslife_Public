@@ -1,0 +1,12 @@
+Sub ConnecterAutoShape()
+' コネクターなどの、図形の書式を一括で整える
+    For i = 1 To ActiveSheet.Shapes.Count
+        If ActiveSheet.Shapes(i).Name Like "*Connect*" Then
+            With ActiveSheet.Shapes(i)
+                .Line.Weight = 5
+            End With
+        End If
+    Next i
+End Sub
+Sub AutoSize()
+    

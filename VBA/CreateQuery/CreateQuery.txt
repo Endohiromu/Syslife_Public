@@ -1,0 +1,121 @@
+b createQuery2()
+' 特定のフォーマットのテーブル定義書から、CREATE TABLEクエリを生成します。
+
+    Dim query As String
+
+    'もう少しキレイに書けそう
+    query = " CREATE TABLE TABLENAME ( " & vbLf & "    FIELDS" & vbLf & "    PKEYS" & vbLf & ")"
+    
+    Dim tableNm As String
+    tableNm = Cells(5, 10).Text
+    
+    Dim fields As String
+    Dim pkeys As String
+    
+    Dim rowI As Integer
+    rowI = 10
+    
+    Dim columnNm As String
+    Dim fieldType As String
+    Dim zen As String
+    Dim syou As String
+    Dim allowNull As String
+    Dim pArray() As Variant
+    Dim pNum As Integer
+    
+    pNum = Range("A1").End(xlDown).Row
+    
+    ReDim pArray(pNum) As Variant
+     
+    While Cells(rowI, 10).Value <> Empty
+        
+        columnNm = ""
+        fieldType = ""
+        zen = ""
+        syou = ""
+        allowNull = ""
+
+        
+        
+        '初回のみカンマ無し
+        If rowI = 10 Then
+            fields = fields & ""
+        Else
+            fields = fields & "    ,"
+        End If
+        
+        columnNm = Cells(rowI, 10).Value
+
+        fieldType = Cells(rowI, 15).Value
+        
+        'DATETIMEは桁数なし
+        If fieldType = "DATETIME" Then
+            zen = ""
+        Else
+            zen = "(" & Cells(rowI, 18).Value
+            '小数部
+            If Cells(rowI, 19) <> "" Then
+                syou = "," & Cells(rowI, 19).Value & ") "
+            Else
+                syou = ") "
+            End If
+        End If
+        
+        'Null
+        If Cells(rowI, 20).Value = "×" Then
+            allowNull = "NOT NULL"
+        Else
+            allowNull = " NULL "
+        End If
+        
+        'Pkeyを配列に格納していく
+        If Cells(rowI, 22).Value <> Empty Then
+            
+            pArray(Val(Cells(rowI, 22).Value)) = columnNm
+
+        End If
+        
+        fields = fields & columnNm & " " & fieldType & " " & zen & syou & allowNull & vbLf
+        
+        rowI = rowI + 1
+        
+    Wend
+    
+    pkeys = pkeys & "PRIMARY KEY ("
+    
+    'PKEYのセット(配列内を順に回していく)
+    Dim ind As Integer
+    ind = 0
+    
+    For Each pKey In pArray
+        If pKey <> "" Then
+            If ind <> 0 Then
+                pkeys = pkeys & ","
+            End If
+                       
+            pkeys = pkeys & pKey
+            ind = ind + 1
+        End If
+    Next pKey
+    pkeys = pkeys & ")"
+    
+    
+    'query = " CREATE TABLENAME ( " & vbLf & "    FIELDS" & vbLf & "    PKEYS" & vbLf & ")"
+    '各部を置換していく
+    query = Replace(query, "TABLENAME", tableNm)
+    query = Replace(query, "FIELDS", fields)
+    query = Replace(query, "PKEYS", pkeys)
+
+    
+    
+    Cells(3, 1).Value = query
+    'クリップボードへのコピー
+    
+    Dim clip As DataObject
+    Set clip = New DataObject
+    
+    clip.SetText (query)
+    clip.PutInClipboard
+
+
+End Sub
